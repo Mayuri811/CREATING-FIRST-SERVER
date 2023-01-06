@@ -1,79 +1,45 @@
-const http = require("http");
-const List1 =["sleep", "cook"];
-
+const express = require("express");
 const port = 8081;
-http.createServer((request, response) =>{
-    const {method, url} = request;
-    if(url=== "/todoList")
-    {
-        if(method==="GET")
-        {
-            response.writeHead(200, {"Content-Type": "text/html"});
-            response.write(List1.toString());
-            response.end();
-        }
-        else if(method==="POST")
-        {
-            let body="";
-            request.on('error', (err)=>{
-                console.error(err);
-            })
-            .on('data', (chunk)=>{
-                body+=chunk;
-            })
-            .on('end', ()=>
-            {
+const List1 = ["sleep", "cook"];
+const app = express();
+app.use(express.json());
 
-                body=JSON.parse(body);
-                List1.push(body.item);
-                console.log(List1);
-                response.end();
-            })
-
-
-
-        }else if(method==='DELETE'){
-            let body="";
-            request.on('error', (err)=>{
-                console.error(err);
-            })
-            .on('data', (chunk)=>{
-                body+=chunk;
-            })
-            .on('end', ()=>
-            {
-                body=JSON.parse(body);
-                console.log(List1);
-                List1.find((element, index) => {
-                    if(element == body.item)
-                    {
-                        List1.splice(index, 1);
-                    }
-
-                }
-                
-            )
-
-            console.log(List1);
-            response.end();
-        })
-
-
-        }
-        else{
-            response.writeHead(501);
-            response.end();
-
-        }
-    }
-    else 
-    {
-        response.writeHead(401)
-        response.end();
-    }
-
+app.get("/todos", (req, res)=>{
+  
+    res.status(200).send(List1);
 })
-.listen(port, () =>
-{
-    console.log(`Node.js server started on port ${port}`);
-});
+
+app.post("/todos",(req, res)=>{
+  
+    List1.push(req.body.item);
+    console.log(List1);
+    res.end();
+})
+
+app.delete("/todos",(req, res)=>{
+  
+    
+    List1.find((element, index) => {
+        if(element == req.body.item)
+        {
+            List1.splice(index, 1);
+        }
+
+    })
+    console.log(List1);
+    res.end();
+})
+
+app.all("/todos",(req, res)=>{
+    res.status(401);
+})
+
+app.all("*",(req, res)=>{
+    res.status(501);
+})
+
+
+app.listen(port, ()=>{
+    console.log(`Server started listening on port ${port}`);
+})
+
